@@ -15,14 +15,17 @@ from flask import (Flask, abort, flash, g, redirect, render_template,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.environ.get("CAMPUSCONNECT_DB", os.path.join(BASE_DIR, "campusconnect.db"))
+DB_PATH = os.environ.get(
+    "CAMPUSCONNECT_DB", os.path.join(BASE_DIR, "campusconnect.db"))
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me-in-production")
+app.config["SECRET_KEY"] = os.environ.get(
+    "SECRET_KEY") or secrets.token_hex(32)
 # Show demo accounts on the login page (turn off with DEMO_MODE=0).
 app.config["DEMO_MODE"] = os.environ.get("DEMO_MODE", "1") == "1"
 # Optional: only allow registration with a college email, e.g. ALLOWED_EMAIL_DOMAIN=its.edu
-ALLOWED_EMAIL_DOMAIN = os.environ.get("ALLOWED_EMAIL_DOMAIN", "").strip().lower()
+ALLOWED_EMAIL_DOMAIN = os.environ.get(
+    "ALLOWED_EMAIL_DOMAIN", "").strip().lower()
 
 DEPARTMENTS = {
     "CSE": "CSE",
@@ -137,10 +140,12 @@ def seed(db):
             (name, email, generate_password_hash(pw), role, dept, year, ts(30)))
         return cur.lastrowid
 
-    admin = user("Student Affairs Office", "admin@its.edu", "admin123", "admin", "ALL", 0)
+    admin = user("Student Affairs Office", "admin@its.edu",
+                 "admin123", "admin", "ALL", 0)
     club = user("Tech Club", "club@its.edu", "club123", "club", "CSE", 3)
     yash = user("Yash", "yash@its.edu", "student123", "student", "CSE-AIML", 4)
-    riya = user("Riya Sharma", "riya@its.edu", "student123", "student", "ECE", 2)
+    riya = user("Riya Sharma", "riya@its.edu",
+                "student123", "student", "ECE", 2)
     aman = user("Aman Verma", "aman@its.edu", "student123", "student", "IT", 3)
 
     notices = [
@@ -198,7 +203,8 @@ def seed(db):
         ev_ids.append(cur.lastrowid)
     for eid, uid in [(ev_ids[0], yash), (ev_ids[0], aman), (ev_ids[0], riya), (ev_ids[1], riya),
                      (ev_ids[2], yash), (ev_ids[2], aman), (ev_ids[3], aman)]:
-        db.execute("INSERT INTO event_registrations (event_id,user_id,created_at) VALUES (?,?,?)", (eid, uid, ts(1)))
+        db.execute(
+            "INSERT INTO event_registrations (event_id,user_id,created_at) VALUES (?,?,?)", (eid, uid, ts(1)))
 
     items = [
         ("lost", "Blue steel water bottle", "Blue bottle with a small dent near the base and a sticker on the side.",
@@ -300,7 +306,8 @@ def inject_globals():
 @app.before_request
 def load_user_and_check_csrf():
     uid = session.get("user_id")
-    g.user = get_db().execute("SELECT * FROM users WHERE id = ?", (uid,)).fetchone() if uid else None
+    g.user = get_db().execute("SELECT * FROM users WHERE id = ?",
+                              (uid,)).fetchone() if uid else None
     if request.method == "POST":
         sent = request.form.get("_csrf", "")
         if not sent or not secrets.compare_digest(sent, session.get("_csrf", "")):
@@ -369,7 +376,8 @@ def register():
         if not EMAIL_RE.match(email):
             errors.append("Enter a valid email address.")
         elif ALLOWED_EMAIL_DOMAIN and not email.endswith("@" + ALLOWED_EMAIL_DOMAIN):
-            errors.append(f"Use your college email (ending in @{ALLOWED_EMAIL_DOMAIN}).")
+            errors.append(
+                f"Use your college email (ending in @{ALLOWED_EMAIL_DOMAIN}).")
         if len(password) < 6:
             errors.append("Choose a password with at least 6 characters.")
         if dept not in DEPARTMENTS:
@@ -378,7 +386,8 @@ def register():
             errors.append("Select your year.")
         db = get_db()
         if not errors and db.execute("SELECT 1 FROM users WHERE email = ?", (email,)).fetchone():
-            errors.append("An account with this email already exists. Sign in instead.")
+            errors.append(
+                "An account with this email already exists. Sign in instead.")
         if errors:
             for e in errors:
                 flash(e, "error")
@@ -512,7 +521,8 @@ def event_new():
     if request.method == "POST":
         title, desc = field("title", 140), field("description", 2000)
         venue, organiser = field("venue", 120), field("organiser", 100)
-        ev_date, ev_time = request.form.get("event_date", ""), request.form.get("event_time", "")
+        ev_date, ev_time = request.form.get(
+            "event_date", ""), request.form.get("event_time", "")
         errors = []
         if len(title) < 3:
             errors.append("Add an event title (at least 3 characters).")
@@ -563,7 +573,8 @@ def event_register(event_id):
     exists = db.execute("SELECT 1 FROM event_registrations WHERE event_id = ? AND user_id = ?",
                         (event_id, g.user["id"])).fetchone()
     if exists:
-        db.execute("DELETE FROM event_registrations WHERE event_id = ? AND user_id = ?", (event_id, g.user["id"]))
+        db.execute("DELETE FROM event_registrations WHERE event_id = ? AND user_id = ?",
+                   (event_id, g.user["id"]))
         flash(f"Registration cancelled for {ev['title']}.", "success")
     elif ev["event_date"] < date.today().isoformat():
         flash("This event has already taken place.", "error")
@@ -675,7 +686,8 @@ def get_item_or_404(item_id):
 def lostfound_resolve(item_id):
     item = get_item_or_404(item_id)
     db = get_db()
-    db.execute("UPDATE lost_found SET status = 'resolved' WHERE id = ?", (item_id,))
+    db.execute(
+        "UPDATE lost_found SET status = 'resolved' WHERE id = ?", (item_id,))
     db.commit()
     flash("Marked as resolved. Thanks for keeping the board up to date.", "success")
     return redirect(url_for("lostfound"))
