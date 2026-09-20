@@ -15,8 +15,17 @@ from flask import (Flask, abort, flash, g, redirect, render_template,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.environ.get(
-    "CAMPUSCONNECT_DB", os.path.join(BASE_DIR, "campusconnect.db"))
+# DB_PATH = os.environ.get(
+#     "CAMPUSCONNECT_DB", os.path.join(BASE_DIR, "campusconnect.db"))
+
+# 1. Check if running on Vercel production by looking for the VERCEL environment variable
+if os.environ.get("VERCEL"):
+    # Force the database file into Vercel's only writeable folder
+    DB_PATH = os.environ.get("CAMPUSCONNECT_DB", "/tmp/campusconnect.db")
+else:
+    # Keep your original configuration for local development
+    DB_PATH = os.environ.get("CAMPUSCONNECT_DB", os.path.join(BASE_DIR, "campusconnect.db"))
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get(
