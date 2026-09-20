@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import icon, csrf %}
+{% block title %}Lost &amp; Found - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Lost &amp; Found</h1>
+    <p class="muted">Lost something or found something? Post it here so the right person sees it.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('lostfound_new') }}">{{ icon('plus') }} Post an item</a>
+</div>
+
+<form class="filters" method="get" data-autosubmit>
+  <div>
+    <label for="kind">Show</label>
+    <select id="kind" name="kind">
+      <option value="all" {{ 'selected' if kind == 'all' }}>Lost and found</option>
+      <option value="lost" {{ 'selected' if kind == 'lost' }}>Lost items</option>
+      <option value="found" {{ 'selected' if kind == 'found' }}>Found items</option>
+    </select>
+  </div>
+  <div>
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="open" {{ 'selected' if status == 'open' }}>Still open</option>
+      <option value="all" {{ 'selected' if status == 'all' }}>Include resolved</option>
+    </select>
+  </div>
+  <div class="grow">
+    <label for="q">Search</label>
+    <input id="q" name="q" type="search" value="{{ q }}" placeholder="Bottle, wallet, library">
+  </div>
+  <button class="btn btn-quiet" type="submit">Apply</button>
+</form>
+
+{% if items %}
+<div class="grid-2">
+  {% for it in items %}
+  <article class="card item {{ 'is-resolved' if it['status'] == 'resolved' }}">
+    <div class="chips">
+      <span class="chip {{ 'chip-lost' if it['kind'] == 'lost' else 'chip-found' }}">{{ 'Lost' if it['kind'] == 'lost' else 'Found' }}</span>
+      {% if it['status'] == 'resolved' %}<span class="chip">Resolved</span>{% endif %}
+    </div>
+    <h2>{{ it['title'] }}</h2>
+    {% if it['description'] %}<p class="prose">{{ it['description'] }}</p>{% endif %}
+    <ul class="facts stacked">
+      <li>{{ icon('pin') }} {{ it['location'] }}</li>
+      <li>{{ icon('calendar') }} {{ it['item_date']|longdate }}</li>
+      <li>{{ icon('user') }} {{ it['poster'] }}, {{ it['contact'] }}</li>
+    </ul>
+    {% if it['user_id'] == g.user['id'] or g.user['role'] == 'admin' %}
+    <div class="card-foot">
+      {% if it['status'] == 'open' %}
+      <form method="post" action="{{ url_for('lostfound_resolve', item_id=it['id']) }}">
+        {{ csrf() }}<button class="btn btn-quiet" type="submit">{{ 'Mark as found' if it['kind'] == 'lost' else 'Mark as returned' }}</button>
+      </form>
+      {% else %}<span></span>{% endif %}
+      <form method="post" action="{{ url_for('lostfound_delete', item_id=it['id']) }}" data-confirm="Delete this post?">
+        {{ csrf() }}<button class="link-btn danger" type="submit">Delete</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <h2>Nothing on the board</h2>
+  <p>No items match these filters. If you lost or found something, post it so others can help.</p>
+  <a class="btn btn-quiet" href="{{ url_for('lostfound_new') }}">Post an item</a>
+</div>
+{% endif %}
+{% endblock %}

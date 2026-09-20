@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}Create account - CampusConnect{% endblock %}
+{% block content %}
+<section class="auth auth-narrow">
+  <div class="auth-card">
+    <h1 class="h2">Create your account</h1>
+    <p class="muted">Your department and year decide which notices you see first.</p>
+    <form method="post" novalidate>
+      {{ csrf() }}
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" maxlength="80" autocomplete="name" value="{{ form.get('name','') }}" required>
+      <label for="email">College email</label>
+      <input id="email" name="email" type="email" maxlength="120" autocomplete="username" value="{{ form.get('email','') }}" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" minlength="6" autocomplete="new-password" required>
+      <p class="hint">At least 6 characters.</p>
+      <div class="row-2">
+        <div>
+          <label for="department">Department</label>
+          <select id="department" name="department" required>
+            <option value="">Select</option>
+            {% for code, label in DEPARTMENTS.items() %}<option value="{{ code }}" {{ 'selected' if form.get('department') == code }}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="year">Year</label>
+          <select id="year" name="year" required>
+            <option value="">Select</option>
+            {% for y in YEARS %}<option value="{{ y }}" {{ 'selected' if form.get('year') == y|string }}>{{ y|year_label }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Create account</button>
+    </form>
+    <p class="auth-alt">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+  </div>
+</section>
+{% endblock %}

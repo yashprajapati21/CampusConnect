@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Attendees - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Attendees</h1>
+    <p class="muted">{{ event['title'] }}, {{ event['event_date']|longdate }}. {{ people|length }} registered.</p>
+  </div>
+  <a class="btn btn-quiet" href="{{ url_for('events') }}">Back to events</a>
+</div>
+{% if people %}
+<div class="card table-wrap">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Department</th><th>Year</th><th>Email</th><th>Registered</th></tr></thead>
+    <tbody>
+    {% for p in people %}
+      <tr>
+        <td>{{ p['name'] }}</td>
+        <td>{{ p['department']|dept_label }}</td>
+        <td>{{ p['year']|year_label }}</td>
+        <td>{{ p['email'] }}</td>
+        <td>{{ p['created_at']|timeago }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty"><h2>No registrations yet</h2><p>Share the event so students can register.</p></div>
+{% endif %}
+{% endblock %}

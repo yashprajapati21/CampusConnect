@@ -1,0 +1,67 @@
+{% from '_macros.html' import icon, csrf %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1B2545">
+  <title>{% block title %}CampusConnect{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('index') }}">Campus<span>Connect</span></a>
+    {% if g.user %}
+    {% set ep = request.endpoint or '' %}
+    <nav class="nav" aria-label="Main">
+      <a href="{{ url_for('announcements') }}" class="{{ 'active' if ep.startswith('announcement') }}">Announcements</a>
+      <a href="{{ url_for('events') }}" class="{{ 'active' if ep.startswith('event') }}">Events</a>
+      <a href="{{ url_for('lostfound') }}" class="{{ 'active' if ep.startswith('lostfound') }}">Lost &amp; Found</a>
+    </nav>
+    <div class="account">
+      <span class="account-name">{{ icon('user') }} {{ g.user['name'].split()[0] }}
+        {% if g.user['role'] != 'student' %}<span class="role-tag">{{ 'Admin' if g.user['role'] == 'admin' else 'Club' }}</span>{% endif %}
+      </span>
+      <form method="post" action="{{ url_for('logout') }}">{{ csrf() }}<button class="link-btn" type="submit">Sign out</button></form>
+    </div>
+    {% endif %}
+  </div>
+</header>
+
+<main id="main" class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flashes" role="status">
+      {% for cat, msg in messages %}
+      <div class="flash flash-{{ cat }}"><span>{{ msg }}</span><button type="button" class="flash-close" aria-label="Dismiss">&times;</button></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+{% if g.user %}
+{% set ep = request.endpoint or '' %}
+<nav class="tabbar" aria-label="Main">
+  <a href="{{ url_for('announcements') }}" class="{{ 'active' if ep.startswith('announcement') }}">{{ icon('bell') }}<span>Notices</span></a>
+  <a href="{{ url_for('events') }}" class="{{ 'active' if ep.startswith('event') }}">{{ icon('calendar') }}<span>Events</span></a>
+  <a href="{{ url_for('lostfound') }}" class="{{ 'active' if ep.startswith('lostfound') }}">{{ icon('search') }}<span>Lost &amp; Found</span></a>
+</nav>
+{% endif %}
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import date_tile, icon, csrf %}
+{% block title %}Events - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Events</h1>
+    <p class="muted">{{ 'Events that already took place.' if show_past else 'Upcoming events. Register in one tap.' }}</p>
+  </div>
+  {% if g.user['role'] in ('admin', 'club') %}
+  <a class="btn btn-primary" href="{{ url_for('event_new') }}">{{ icon('plus') }} Create event</a>
+  {% endif %}
+</div>
+
+<div class="segmented" role="tablist" aria-label="Event list">
+  <a href="{{ url_for('events') }}" class="{{ '' if show_past else 'active' }}">Upcoming</a>
+  <a href="{{ url_for('events', show='past') }}" class="{{ 'active' if show_past }}">Past</a>
+</div>
+
+{% if events %}
+<div class="stack">
+  {% for e in events %}
+  <article class="card event" id="event-{{ e['id'] }}">
+    {{ date_tile(e['event_date']) }}
+    <div class="card-body">
+      <h2>{{ e['title'] }}</h2>
+      <ul class="facts">
+        <li>{{ icon('calendar') }} {{ e['event_date']|longdate }}</li>
+        <li>{{ icon('clock') }} {{ e['event_time']|clock }}</li>
+        <li>{{ icon('pin') }} {{ e['venue'] }}</li>
+      </ul>
+      <p class="prose">{{ e['description'] }}</p>
+      <div class="card-foot">
+        <span class="muted">By {{ e['organiser'] }}. <strong>{{ e['reg_count'] }}</strong> registered.</span>
+        <div class="actions">
+          {% if g.user['role'] == 'admin' or e['creator_id'] == g.user['id'] %}
+          <a class="link-btn" href="{{ url_for('event_attendees', event_id=e['id']) }}">Attendees</a>
+          <form method="post" action="{{ url_for('event_delete', event_id=e['id']) }}" data-confirm="Delete this event and all its registrations?">
+            {{ csrf() }}<button class="link-btn danger" type="submit">Delete</button>
+          </form>
+          {% endif %}
+          {% if not show_past %}
+          <form method="post" action="{{ url_for('event_register', event_id=e['id']) }}">
+            {{ csrf() }}
+            {% if e['registered'] %}
+            <span class="chip chip-found">You are registered</span>
+            <button class="btn btn-quiet" type="submit">Cancel registration</button>
+            {% else %}
+            <button class="btn btn-primary" type="submit">Register</button>
+            {% endif %}
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <h2>{{ 'No past events yet' if show_past else 'No upcoming events' }}</h2>
+  <p>{{ 'Events show up here once their date has passed.' if show_past else 'Clubs and departments can create events from the button above.' }}</p>
+</div>
+{% endif %}
+{% endblock %}

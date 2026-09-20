@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}Post a notice - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Post a notice</h1><p class="muted">Choose who should see it. Students filter by department and year.</p></div></div>
+<form class="card form-card" method="post" novalidate>
+  {{ csrf() }}
+  <label for="title">Title</label>
+  <input id="title" name="title" type="text" maxlength="140" value="{{ form.get('title','') }}" required>
+  <label for="body">Notice</label>
+  <textarea id="body" name="body" rows="6" maxlength="2000" required>{{ form.get('body','') }}</textarea>
+  <div class="row-2">
+    <div>
+      <label for="department">Department</label>
+      <select id="department" name="department">
+        <option value="ALL" {{ 'selected' if form.get('department','ALL') == 'ALL' }}>All departments</option>
+        {% for code, label in DEPARTMENTS.items() %}<option value="{{ code }}" {{ 'selected' if form.get('department') == code }}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="year">Year</label>
+      <select id="year" name="year">
+        <option value="0" {{ 'selected' if form.get('year','0') == '0' }}>All years</option>
+        {% for y in YEARS %}<option value="{{ y }}" {{ 'selected' if form.get('year') == y|string }}>{{ y|year_label }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <label class="check"><input type="checkbox" name="important" value="1" {{ 'checked' if form.get('important') }}> Mark as important (pinned to the top)</label>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Publish notice</button>
+    <a class="btn btn-quiet" href="{{ url_for('announcements') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

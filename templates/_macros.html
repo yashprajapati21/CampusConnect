@@ -1,0 +1,10 @@
+{% macro date_tile(d, alert=False) %}
+<div class="date-tile{% if alert %} is-alert{% endif %}" aria-hidden="true">
+  <span class="dt-day">{{ d|day }}</span>
+  <span class="dt-mon">{{ d|mon }}</span>
+</div>
+{% endmacro %}
+
+{% macro icon(name) %}<svg class="icon" aria-hidden="true"><use href="#i-{{ name }}"/></svg>{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}

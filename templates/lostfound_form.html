@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}Post an item - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Post an item</h1><p class="muted">Add enough detail for the owner to recognise it, but keep private details out.</p></div></div>
+<form class="card form-card" method="post" novalidate>
+  {{ csrf() }}
+  <fieldset class="kind-pick">
+    <legend>What happened?</legend>
+    <label class="radio"><input type="radio" name="kind" value="lost" {{ 'checked' if form.get('kind','lost') == 'lost' }}> I lost something</label>
+    <label class="radio"><input type="radio" name="kind" value="found" {{ 'checked' if form.get('kind') == 'found' }}> I found something</label>
+  </fieldset>
+  <label for="title">Item</label>
+  <input id="title" name="title" type="text" maxlength="100" placeholder="Blue water bottle" value="{{ form.get('title','') }}" required>
+  <label for="description">Details</label>
+  <textarea id="description" name="description" rows="3" maxlength="600" placeholder="Colour, brand, marks, what is inside">{{ form.get('description','') }}</textarea>
+  <div class="row-2">
+    <div>
+      <label for="location">Where</label>
+      <input id="location" name="location" type="text" maxlength="120" placeholder="Library, Block B, canteen" value="{{ form.get('location','') }}" required>
+    </div>
+    <div>
+      <label for="item_date">Date</label>
+      <input id="item_date" name="item_date" type="date" max="{{ today_iso }}" value="{{ form.get('item_date','') }}" required>
+    </div>
+  </div>
+  <label for="contact">How can people reach you?</label>
+  <input id="contact" name="contact" type="text" maxlength="120" value="{{ form.get('contact','') }}" required>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Post to the board</button>
+    <a class="btn btn-quiet" href="{{ url_for('lostfound') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

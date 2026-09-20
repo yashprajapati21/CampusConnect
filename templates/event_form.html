@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}Create event - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Create an event</h1><p class="muted">Students can register as soon as you publish it.</p></div></div>
+<form class="card form-card" method="post" novalidate>
+  {{ csrf() }}
+  <label for="title">Event title</label>
+  <input id="title" name="title" type="text" maxlength="140" value="{{ form.get('title','') }}" required>
+  <label for="description">What is it about?</label>
+  <textarea id="description" name="description" rows="5" maxlength="2000" required>{{ form.get('description','') }}</textarea>
+  <div class="row-2">
+    <div>
+      <label for="event_date">Date</label>
+      <input id="event_date" name="event_date" type="date" min="{{ today_iso }}" value="{{ form.get('event_date','') }}" required>
+    </div>
+    <div>
+      <label for="event_time">Start time</label>
+      <input id="event_time" name="event_time" type="time" value="{{ form.get('event_time','') }}" required>
+    </div>
+  </div>
+  <div class="row-2">
+    <div>
+      <label for="venue">Venue</label>
+      <input id="venue" name="venue" type="text" maxlength="120" value="{{ form.get('venue','') }}" required>
+    </div>
+    <div>
+      <label for="organiser">Organised by</label>
+      <input id="organiser" name="organiser" type="text" maxlength="100" value="{{ form.get('organiser','') }}" required>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Publish event</button>
+    <a class="btn btn-quiet" href="{{ url_for('events') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

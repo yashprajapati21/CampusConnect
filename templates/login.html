@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}Sign in - CampusConnect{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-intro">
+    <h1>Every college update, in one place.</h1>
+    <p>Notices, events and lost-and-found for your department and year. No more scrolling through WhatsApp groups to find one message.</p>
+  </div>
+  <div class="auth-card">
+    <h2>Sign in</h2>
+    <form method="post" id="login-form" novalidate>
+      {{ csrf() }}
+      <label for="email">College email</label>
+      <input id="email" name="email" type="email" autocomplete="username" value="{{ email }}" required autofocus>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+    <p class="auth-alt">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+
+    {% if config.DEMO_MODE %}
+    <div class="demo-box">
+      <p class="demo-title">Demo accounts</p>
+      <div class="demo-list">
+        <button type="button" class="demo-btn" data-email="yash@its.edu" data-password="student123"><strong>Student</strong> Yash, CSE (AI &amp; ML), 4th year</button>
+        <button type="button" class="demo-btn" data-email="club@its.edu" data-password="club123"><strong>Club</strong> Tech Club representative</button>
+        <button type="button" class="demo-btn" data-email="admin@its.edu" data-password="admin123"><strong>Admin</strong> Student Affairs Office</button>
+      </div>
+      <p class="hint">Tap a role to fill the form, then sign in.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

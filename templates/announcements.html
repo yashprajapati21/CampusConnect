@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import date_tile, icon, csrf %}
+{% block title %}Announcements - CampusConnect{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Announcements</h1>
+    <p class="muted">
+      {% if dept == 'all' and year == 'all' %}Showing every notice.
+      {% else %}Showing notices for {{ (dept|dept_label) if dept != 'all' else 'all departments' }}, {{ (year|int|year_label) if year != 'all' else 'all years' }}.{% endif %}
+    </p>
+  </div>
+  {% if g.user['role'] == 'admin' %}
+  <a class="btn btn-primary" href="{{ url_for('announcement_new') }}">{{ icon('plus') }} Post a notice</a>
+  {% endif %}
+</div>
+
+<form class="filters" method="get" data-autosubmit>
+  <div>
+    <label for="dept">Department</label>
+    <select id="dept" name="dept">
+      <option value="all" {{ 'selected' if dept == 'all' }}>All departments</option>
+      {% for code, label in DEPARTMENTS.items() %}<option value="{{ code }}" {{ 'selected' if dept == code }}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="year">Year</label>
+    <select id="year" name="year">
+      <option value="all" {{ 'selected' if year == 'all' }}>All years</option>
+      {% for y in YEARS %}<option value="{{ y }}" {{ 'selected' if year == y|string }}>{{ y|year_label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="grow">
+    <label for="q">Search</label>
+    <input id="q" name="q" type="search" value="{{ q }}" placeholder="Exam form, library, scholarship">
+  </div>
+  <button class="btn btn-quiet" type="submit">Apply</button>
+</form>
+
+{% if notices %}
+<div class="stack">
+  {% for a in notices %}
+  <article class="card notice">
+    {{ date_tile(a['created_at'], alert=a['important']) }}
+    <div class="card-body">
+      <div class="chips">
+        {% if a['important'] %}<span class="chip chip-alert">Important</span>{% endif %}
+        <span class="chip">{{ a['department']|dept_label }}</span>
+        <span class="chip">{{ a['year']|year_label }}</span>
+      </div>
+      <h2>{{ a['title'] }}</h2>
+      <p class="prose">{{ a['body'] }}</p>
+      <div class="card-foot">
+        <span class="muted">Posted by {{ a['author'] }}, {{ a['created_at']|timeago }}</span>
+        {% if g.user['role'] == 'admin' %}
+        <form method="post" action="{{ url_for('announcement_delete', notice_id=a['id']) }}" data-confirm="Delete this notice for everyone?">
+          {{ csrf() }}<button class="link-btn danger" type="submit">Delete</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <h2>No notices match these filters</h2>
+  <p>Try a different department or year, or clear the search.</p>
+  <a class="btn btn-quiet" href="{{ url_for('announcements', dept='all', year='all') }}">Show every notice</a>
+</div>
+{% endif %}
+{% endblock %}
