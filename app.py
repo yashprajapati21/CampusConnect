@@ -713,7 +713,16 @@ def lostfound_delete(item_id):
     return redirect(url_for("lostfound"))
 
 
-init_db()
+# Remove the old global init_db() call from the bottom of your file
+
+@app.before_request
+def setup_database_on_start():
+    """Runs safely on Vercel only when the first web request arrives."""
+    init_db()
+    # Remove itself so it doesn't execute again on subsequent user requests
+    if setup_database_on_start in app.before_request_funcs.get(None, []):
+        app.before_request_funcs[None].remove(setup_database_on_start)
+
 
 if __name__ == "__main__":
     app.run(debug=os.environ.get("FLASK_DEBUG", "1") == "1")
